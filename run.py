@@ -82,7 +82,7 @@ def run(config_path: Path, data_dir: Path, seed: bool) -> int:
     errors = [f"{r['company']}: {r['error']}" for r in results if r["error"]]
     store.save_run_status(data_dir, ok=not errors, errors=errors)
 
-    out = build_dashboard(data_dir, ROOT / "dashboard.html", config_path)
+    out = build_dashboard(data_dir, ROOT / "dashboard" / "index.html", config_path)
     print(f"[dashboard] {out}")
     return 1 if errors else 0
 

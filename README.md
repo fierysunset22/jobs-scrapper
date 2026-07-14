@@ -45,7 +45,7 @@ A failed company never aborts the others — its error is recorded in the digest
 
 ## Live dashboard server (optional)
 
-By default `dashboard.html` is a static file: data is baked in when `run.py`
+By default `index.html` is a static file: data is baked in when `run.py`
 generates it, and its Refresh button only reloads the file. To make Refresh
 actually re-fetch live, run the local server instead:
 

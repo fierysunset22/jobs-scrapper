@@ -49,7 +49,7 @@ jobs:
       - name: Assemble Pages site
         run: |
           mkdir -p site
-          cp dashboard.html site/index.html
+          cp -r dashboard/* site/
           touch site/.nojekyll
 
       - name: Upload Pages artifact

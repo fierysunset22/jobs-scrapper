@@ -18,7 +18,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data"
 CONFIG = ROOT / "config.json"
-DASHBOARD = ROOT / "dashboard.html"
+DASHBOARD = ROOT / "dashboard" / "index.html"
 
 # Serialize refreshes so two button presses can't run the pipeline concurrently
 # and clobber each other's snapshot writes.
@@ -47,12 +47,34 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         path = self.path.split("?")[0]
-        if path in ("/", "/index.html", "/dashboard.html"):
+        if path in ("/", "/index.html"):
+            # Serve the main dashboard index. Prefer the dashboard/index.html
+            # file when present, otherwise fall back to the older single-file
+            # location for compatibility.
+            preferred = ROOT / "dashboard" / "index.html"
+            if preferred.exists():
+                self._send(200, preferred.read_bytes(), "text/html; charset=utf-8")
+                return
             if not DASHBOARD.exists():
                 self._send(503, b"dashboard not generated yet; run python3 run.py",
                            "text/plain; charset=utf-8")
                 return
             self._send(200, DASHBOARD.read_bytes(), "text/html; charset=utf-8")
+            return
+        # Serve static files under /dashboard/* (styles, app.js, data.json).
+        if path.startswith("/dashboard/"):
+            fp = ROOT / path.lstrip("/")
+            if fp.exists() and fp.is_file():
+                if fp.suffix == ".css":
+                    ctype = "text/css; charset=utf-8"
+                elif fp.suffix == ".js":
+                    ctype = "application/javascript; charset=utf-8"
+                elif fp.suffix == ".json":
+                    ctype = "application/json; charset=utf-8"
+                else:
+                    ctype = "application/octet-stream"
+                self._send(200, fp.read_bytes(), ctype)
+                return
         elif path == "/api/health":
             self._send(200, b'{"ok":true}', "application/json")
         elif path == "/api/prefs":
