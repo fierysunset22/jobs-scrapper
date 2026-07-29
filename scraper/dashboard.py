@@ -313,14 +313,28 @@ _TEMPLATE = r"""<!DOCTYPE html>
   .iconbtn.drop:hover { color: oklch(0.72 0.18 25); border-color: oklch(0.45 0.14 25);
     background: oklch(0.22 0.06 25); }
 
-  /* Tracked / following panel — pinned at the top, always visible */
+  /* Tracked / following panel — pinned at the top, collapsed to a summary by default */
   .tracked { margin: 16px 32px 0; background: var(--panel);
     border: 1px solid oklch(0.34 0.07 85); border-radius: 12px; overflow: hidden; }
   .tracked-head { display: flex; align-items: center; gap: 10px; padding: 11px 20px;
-    border-bottom: 1px solid var(--line); background: oklch(0.19 0.035 85); }
+    width: 100%; margin: 0; border: none; border-bottom: 1px solid var(--line); background: oklch(0.19 0.035 85);
+    font: inherit; color: inherit; text-align: left; cursor: pointer; }
+  .tracked-head:hover { background: oklch(0.21 0.04 85); }
   .tracked-title { font-size: 11px; font-weight: 700; color: oklch(0.84 0.15 85);
     letter-spacing: .1em; text-transform: uppercase; }
   .tracked-ct { font-size: 12px; color: var(--muted2); }
+  .tracked-caret { margin-left: auto; flex-shrink: 0; color: oklch(0.7 0.1 85);
+    transition: transform .15s; }
+  .tracked-caret.open { transform: rotate(180deg); }
+
+  /* "N no longer available" sub-group — collapsed within the panel until expanded */
+  .gone-toggle { display: flex; align-items: center; gap: 8px; width: 100%; margin: 0;
+    padding: 10px 20px; border: none; border-left: 3px solid oklch(0.6 0.18 25);
+    background: oklch(0.17 0.03 25); color: oklch(0.72 0.1 25);
+    font: 600 12.5px 'DM Sans', sans-serif; text-align: left; cursor: pointer; }
+  .gone-toggle:hover { background: oklch(0.19 0.035 25); }
+  .gone-toggle .car { margin-left: auto; flex-shrink: 0; transition: transform .15s; }
+  .gone-toggle .car.open { transform: rotate(180deg); }
 
   /* No-longer-available highlight (tracked role that vanished from the feed) */
   .row.gone { background: oklch(0.2 0.045 25); border-left-color: oklch(0.6 0.18 25); }
@@ -370,11 +384,12 @@ _TEMPLATE = r"""<!DOCTYPE html>
   </div>
 
   <div class="tracked" id="tracked" style="display:none">
-    <div class="tracked-head">
+    <button class="tracked-head" id="trackedHead" type="button" aria-expanded="false" aria-controls="trackedRows">
       <span class="tracked-title">★ Following</span>
       <span class="tracked-ct" id="trackedCt"></span>
-    </div>
-    <div id="trackedRows"></div>
+      <svg class="tracked-caret" id="trackedCaret" width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path></svg>
+    </button>
+    <div id="trackedRows" style="display:none"></div>
   </div>
 
   <div class="stats">
@@ -513,6 +528,11 @@ let tracked = (DATA.prefs && DATA.prefs.tracked) || {};
 let hidden = new Set((DATA.prefs && DATA.prefs.hidden) || []);
 let showHidden = false;
 
+// Following panel starts collapsed to a one-line summary; the "no longer
+// available" roles within it stay collapsed even when the panel is expanded.
+let trackedExpanded = false;
+let goneExpanded = false;
+
 // Jobs present in the current run, by id → used to detect tracked roles that
 // have since vanished, and to refresh stored snapshots with the latest data.
 const byId = new Map(DATA.jobs.map(j => [j.id, j]));
@@ -573,6 +593,11 @@ document.addEventListener("click", (e) => {
   if (btn.dataset.act === "track") toggleTrack(id);
   else if (btn.dataset.act === "hide") toggleHide(id);
 });
+// Following-panel collapse/expand and the "no longer available" sub-toggle.
+document.addEventListener("click", (e) => {
+  if (e.target.closest("#trackedHead")) { trackedExpanded = !trackedExpanded; renderTracked(); return; }
+  if (e.target.closest("#goneToggle")) { goneExpanded = !goneExpanded; renderTracked(); }
+});
 
 function actionsHtml(j, ctx) {
   const isTracked = !!tracked[j.id];
@@ -612,11 +637,25 @@ function renderTracked() {
   items.sort((a, b) => (byId.has(b.id) ? 0 : 1) - (byId.has(a.id) ? 0 : 1)
     || (Number(b.isNew) - Number(a.isNew))
     || a.company.localeCompare(b.company));
-  const goneCount = items.filter(j => !byId.has(j.id)).length;
+  const liveItems = items.filter(j => byId.has(j.id));
+  const goneItems = items.filter(j => !byId.has(j.id));
   panel.style.display = "block";
   $("trackedCt").textContent = items.length + (items.length === 1 ? " role" : " roles")
-    + (goneCount ? ` · ${goneCount} no longer available` : "");
-  $("trackedRows").innerHTML = items.map(j => rowHtml(j, "tracked")).join("");
+    + (goneItems.length ? ` · ${goneItems.length} no longer available` : "");
+
+  $("trackedHead").setAttribute("aria-expanded", String(trackedExpanded));
+  $("trackedCaret").classList.toggle("open", trackedExpanded);
+  const rowsEl = $("trackedRows");
+  rowsEl.style.display = trackedExpanded ? "block" : "none";
+  if (!trackedExpanded) return;   // collapsed: skip rebuilding the (hidden) row HTML
+
+  const goneHtml = goneItems.length
+    ? `<button class="gone-toggle" id="goneToggle" type="button" aria-expanded="${goneExpanded}" aria-controls="trackedRows">
+        <span>${goneItems.length} no longer available</span>
+        <svg class="car${goneExpanded ? " open" : ""}" width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path></svg>
+      </button>${goneExpanded ? goneItems.map(j => rowHtml(j, "tracked")).join("") : ""}`
+    : "";
+  rowsEl.innerHTML = liveItems.map(j => rowHtml(j, "tracked")).join("") + goneHtml;
 }
 
 function render() {
