@@ -90,6 +90,9 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/prefs":
             self._save_prefs()
             return
+        if path == "/api/update-filters":
+            self._update_filters()
+            return
         if path != "/api/refresh":
             self._send(404, b"not found", "text/plain; charset=utf-8")
             return
@@ -120,6 +123,64 @@ class Handler(BaseHTTPRequestHandler):
             saved = prefs_store.save_prefs(DATA_DIR, body)
         self._send(200, json.dumps({"ok": True, **saved}).encode(),
                    "application/json")
+
+    def _update_filters(self):
+        """Update config.json filters and re-run the pipeline."""
+        length = int(self.headers.get("Content-Length") or 0)
+        if length <= 0 or length > 10_000:
+            self._send(400, b'{"ok":false,"error":"bad payload size"}',
+                       "application/json")
+            return
+        try:
+            body = json.loads(self.rfile.read(length))
+        except ValueError:
+            self._send(400, b'{"ok":false,"error":"invalid json"}',
+                       "application/json")
+            return
+        
+        # Update config.json with new filter settings
+        try:
+            import json as json_lib
+            config = json_lib.loads(CONFIG.read_text())
+            if "filters" not in config:
+                config["filters"] = {}
+            
+            # Update boolean filters if provided
+            if "us_only" in body:
+                config["filters"]["us_only"] = body["us_only"]
+            if "include_unspecified_remote" in body:
+                config["filters"]["include_unspecified_remote"] = body["include_unspecified_remote"]
+            
+            # Update keywords if provided
+            if "keywords" in body:
+                config["filters"]["keywords"] = body["keywords"]
+            
+            CONFIG.write_text(json_lib.dumps(config, indent=2))
+        except Exception as e:
+            self._send(500, json.dumps({"ok": False, "error": str(e)}).encode(),
+                       "application/json")
+            return
+        
+        # Re-run the pipeline with new filters. Don't block the HTTP response
+        # on the potentially long-running pipeline: schedule it in a
+        # background thread so the UI gets an immediate 200 and the refresh
+        # happens asynchronously. The refresh lock still serializes runs.
+        def _background_run():
+            if not _refresh_lock.acquire(blocking=False):
+                return
+            try:
+                try:
+                    _run_pipeline()
+                except Exception as exc:
+                    print(f"[server] background pipeline failed: {exc}")
+            finally:
+                _refresh_lock.release()
+
+        t = threading.Thread(target=_background_run, daemon=True)
+        t.start()
+        # Respond immediately — the client can still trigger an explicit
+        # Refresh which reports busy if a run is active.
+        self._send(200, b'{"ok":true,"background":true}', "application/json")
 
     def _run_and_respond(self):
         try:

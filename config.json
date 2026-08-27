@@ -6,18 +6,67 @@
   "filters": {
     "us_only": true,
     "include_unspecified_remote": false,
-    "keywords": ["fullstack", "full-stack", "full stack",
-                 "frontend", "front end", "front-end", "ui", "web"]
+    "keywords": [
+      "fullstack",
+      "full-stack",
+      "full stack",
+      "frontend",
+      "front end",
+      "front-end",
+      "ui",
+      "web",
+      "solutions engineering"
+    ]
   },
   "companies": [
-    { "company": "Airbnb",    "provider": "greenhouse", "slug": "airbnb",    "domain": "airbnb.com" },
-    { "company": "Instacart",  "provider": "greenhouse", "slug": "instacart", "domain": "instacart.com" },
-    { "company": "Stripe",     "provider": "greenhouse", "slug": "stripe",    "domain": "stripe.com" },
-    { "company": "Pinterest",  "provider": "greenhouse", "slug": "pinterest", "domain": "pinterest.com" },
-    { "company": "Reddit",     "provider": "greenhouse", "slug": "reddit",    "domain": "reddit.com" },
-    { "company": "Databricks", "provider": "greenhouse", "slug": "databricks", "domain": "databricks.com" },
-    { "company": "Dropbox",    "provider": "greenhouse", "slug": "dropbox",   "domain": "dropbox.com" },
-    { "company": "Netflix",    "provider": "eightfold",  "slug": "netflix",   "domain": "netflix.com",
-      "base_url": "https://explore.jobs.netflix.net" }
+    {
+      "company": "Airbnb",
+      "provider": "greenhouse",
+      "slug": "airbnb",
+      "domain": "airbnb.com"
+    },
+    {
+      "company": "Instacart",
+      "provider": "greenhouse",
+      "slug": "instacart",
+      "domain": "instacart.com"
+    },
+    {
+      "company": "Stripe",
+      "provider": "greenhouse",
+      "slug": "stripe",
+      "domain": "stripe.com"
+    },
+    {
+      "company": "Pinterest",
+      "provider": "greenhouse",
+      "slug": "pinterest",
+      "domain": "pinterest.com"
+    },
+    {
+      "company": "Reddit",
+      "provider": "greenhouse",
+      "slug": "reddit",
+      "domain": "reddit.com"
+    },
+    {
+      "company": "Databricks",
+      "provider": "greenhouse",
+      "slug": "databricks",
+      "domain": "databricks.com"
+    },
+    {
+      "company": "Dropbox",
+      "provider": "greenhouse",
+      "slug": "dropbox",
+      "domain": "dropbox.com"
+    },
+    {
+      "company": "Netflix",
+      "provider": "eightfold",
+      "slug": "netflix",
+      "domain": "netflix.com",
+      "base_url": "https://explore.jobs.netflix.net"
+    }
   ]
 }

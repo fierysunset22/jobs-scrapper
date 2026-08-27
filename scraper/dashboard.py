@@ -123,6 +123,8 @@ def collect(data_dir: Path, config: dict) -> dict:
         "total_jobs": len(jobs),
         "new_count": len(new_ids_today),
         "remote_count": remote_count,
+        # Active filters applied during fetch
+        "filters": config.get("filters", {}),
         # Followed / dismissed roles, embedded so the page renders correctly on
         # first paint (over HTTP the dashboard then reconciles via /api/prefs).
         "prefs": prefs_store.load_prefs(data_dir),
