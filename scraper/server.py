@@ -125,7 +125,7 @@ class Handler(BaseHTTPRequestHandler):
                    "application/json")
 
     def _update_filters(self):
-        """Update config.json filters and re-run the pipeline."""
+        """Apply UI-only filter overrides without mutating the repo config."""
         length = int(self.headers.get("Content-Length") or 0)
         if length <= 0 or length > 10_000:
             self._send(400, b'{"ok":false,"error":"bad payload size"}',
@@ -137,30 +137,13 @@ class Handler(BaseHTTPRequestHandler):
             self._send(400, b'{"ok":false,"error":"invalid json"}',
                        "application/json")
             return
-        
-        # Update config.json with new filter settings
-        try:
-            import json as json_lib
-            config = json_lib.loads(CONFIG.read_text())
-            if "filters" not in config:
-                config["filters"] = {}
-            
-            # Update boolean filters if provided
-            if "us_only" in body:
-                config["filters"]["us_only"] = body["us_only"]
-            if "include_unspecified_remote" in body:
-                config["filters"]["include_unspecified_remote"] = body["include_unspecified_remote"]
-            
-            # Update keywords if provided
-            if "keywords" in body:
-                config["filters"]["keywords"] = body["keywords"]
-            
-            CONFIG.write_text(json_lib.dumps(config, indent=2))
-        except Exception as e:
-            self._send(500, json.dumps({"ok": False, "error": str(e)}).encode(),
-                       "application/json")
-            return
-        
+
+        # Important: do not touch config.json here. The repo config is the
+        # default source for filters, while any edits from the browser stay in
+        # localStorage as a session-specific override.
+        # We still accept the request so the UI can reload, but we never mutate
+        # the on-disk config file.
+
         # Re-run the pipeline with new filters. Don't block the HTTP response
         # on the potentially long-running pipeline: schedule it in a
         # background thread so the UI gets an immediate 200 and the refresh
