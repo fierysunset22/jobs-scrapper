@@ -18,54 +18,16 @@
     ]
   },
   "companies": [
-    {
-      "company": "Airbnb",
-      "provider": "greenhouse",
-      "slug": "airbnb",
-      "domain": "airbnb.com"
-    },
-    {
-      "company": "Instacart",
-      "provider": "greenhouse",
-      "slug": "instacart",
-      "domain": "instacart.com"
-    },
-    {
-      "company": "Stripe",
-      "provider": "greenhouse",
-      "slug": "stripe",
-      "domain": "stripe.com"
-    },
-    {
-      "company": "Pinterest",
-      "provider": "greenhouse",
-      "slug": "pinterest",
-      "domain": "pinterest.com"
-    },
-    {
-      "company": "Reddit",
-      "provider": "greenhouse",
-      "slug": "reddit",
-      "domain": "reddit.com"
-    },
-    {
-      "company": "Databricks",
-      "provider": "greenhouse",
-      "slug": "databricks",
-      "domain": "databricks.com"
-    },
-    {
-      "company": "Dropbox",
-      "provider": "greenhouse",
-      "slug": "dropbox",
-      "domain": "dropbox.com"
-    },
-    {
-      "company": "Netflix",
-      "provider": "eightfold",
-      "slug": "netflix",
-      "domain": "netflix.com",
-      "base_url": "https://explore.jobs.netflix.net"
-    }
+    { "company": "Airbnb",    "provider": "greenhouse", "slug": "airbnb",    "domain": "airbnb.com" },
+    { "company": "Instacart",  "provider": "greenhouse", "slug": "instacart", "domain": "instacart.com" },
+    { "company": "Stripe",     "provider": "greenhouse", "slug": "stripe",    "domain": "stripe.com" },
+    { "company": "Pinterest",  "provider": "greenhouse", "slug": "pinterest", "domain": "pinterest.com" },
+    { "company": "Reddit",     "provider": "greenhouse", "slug": "reddit",    "domain": "reddit.com" },
+    { "company": "Databricks", "provider": "greenhouse", "slug": "databricks", "domain": "databricks.com" },
+    { "company": "Dropbox",    "provider": "greenhouse", "slug": "dropbox",   "domain": "dropbox.com" },
+    { "company": "Anthropic",  "provider": "greenhouse", "slug": "anthropic", "domain": "anthropic.com" },
+    { "company": "OpenAI",     "provider": "ashby",      "slug": "openai",    "domain": "openai.com" },
+    { "company": "Netflix",    "provider": "eightfold",  "slug": "netflix",   "domain": "netflix.com",
+      "base_url": "https://explore.jobs.netflix.net" }
   ]
 }

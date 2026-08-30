@@ -31,6 +31,7 @@ config.json ──▶ adapters ──▶ fetch open roles
 | `greenhouse`| `boards-api.greenhouse.io/v1/boards/<slug>/jobs`               |
 | `lever`     | `api.lever.co/v0/postings/<slug>?mode=json`                    |
 | `eightfold` | `<base_url>/api/apply/v2/jobs?domain=<domain>` (paginated)     |
+| `ashby`     | `api.ashbyhq.com/posting-api/job-board/<slug>`                  |
 
 ## Usage
 

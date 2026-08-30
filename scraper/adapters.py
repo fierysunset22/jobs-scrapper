@@ -107,10 +107,27 @@ def eightfold(cfg: dict) -> list[dict]:
     return out
 
 
+def ashby(cfg: dict) -> list[dict]:
+    """Ashby public Job Board API. No auth required."""
+    org = cfg["slug"]
+    url = f"https://api.ashbyhq.com/posting-api/job-board/{org}"
+    data = _get_json(url)
+    out = []
+    for j in data.get("jobs", []):
+        addr = (j.get("address") or {}).get("postalAddress") or {}
+        # Country/region are more reliable than the free-text location for
+        # country filtering, same role Greenhouse's `offices` plays.
+        offices = [v for v in (addr.get("addressCountry"), addr.get("addressRegion")) if v]
+        out.append(_norm(j.get("id"), j.get("title"), j.get("location"),
+                         j.get("jobUrl"), j.get("publishedAt"), offices))
+    return out
+
+
 ADAPTERS = {
     "greenhouse": greenhouse,
     "lever": lever,
     "eightfold": eightfold,
+    "ashby": ashby,
 }
 
 
