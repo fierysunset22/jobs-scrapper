@@ -30,10 +30,11 @@ _prefs_lock = threading.Lock()
 _MAX_PREFS_BYTES = 5_000_000
 
 
-def _run_pipeline() -> int:
+def _run_pipeline(filter_override: dict | None = None) -> int:
     # Imported lazily so importing the server never pulls in the whole run stack.
     import run as runner
-    return runner.run(CONFIG, DATA_DIR, seed=False)
+    return runner.run(CONFIG, DATA_DIR, seed=False,
+                      filter_override=filter_override)
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -137,6 +138,10 @@ class Handler(BaseHTTPRequestHandler):
             self._send(400, b'{"ok":false,"error":"invalid json"}',
                        "application/json")
             return
+        if not isinstance(body, dict):
+            self._send(400, b'{"ok":false,"error":"invalid filters"}',
+                       "application/json")
+            return
 
         # Important: do not touch config.json here. The repo config is the
         # default source for filters, while any edits from the browser stay in
@@ -153,7 +158,7 @@ class Handler(BaseHTTPRequestHandler):
                 return
             try:
                 try:
-                    _run_pipeline()
+                    _run_pipeline(body)
                 except Exception as exc:
                     print(f"[server] background pipeline failed: {exc}")
             finally:

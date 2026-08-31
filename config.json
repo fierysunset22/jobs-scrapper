@@ -5,7 +5,7 @@
   },
   "filters": {
     "us_only": true,
-    "include_unspecified_remote": false,
+    "work_arrangement": "any",
     "keywords": [
       "fullstack",
       "full-stack",

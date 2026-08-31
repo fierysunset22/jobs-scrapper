@@ -1,5 +1,10 @@
 data/
 dashboard/
+!dashboard/
+!dashboard/index.html
+!dashboard/app.js
+!dashboard/styles.css
+dashboard/data.json
 site/
 __pycache__/
 *.pyc

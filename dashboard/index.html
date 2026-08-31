@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Job Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300..700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/dashboard/styles.css">
+</head>
+<body>
+<div class="page">
+  <!-- Top nav -->
+  <div class="nav">
+    <div class="brand">JobTracker</div>
+    <div class="live"><div class="d"></div><span>Live</span></div>
+    <div class="upd"><span id="upd">Updated —</span><span class="upd-status" id="updStatus" hidden></span></div>
+    <button class="refresh" id="refresh" title="Re-fetch and update"><span id="refreshLabel">⟳ Refresh</span></button>
+  </div>
+
+  <!-- System-level filters (editable, from config.json) -->
+  <div id="systemFilters" class="system-filters">
+    <div class="system-filters-title">System Filters</div>
+    <div class="system-filters-content">
+      <div class="filter-keywords">
+        <span class="keywords-label">Keywords</span>
+        <div id="keywordTags" class="keyword-tags inline-keyword-tags" aria-live="polite">
+          <input id="keywordInput" class="keyword-input" type="text" placeholder="Add keyword" aria-label="Add keyword">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page header -->
+  <div class="head">
+    <h1>Daily Job Postings</h1>
+    <p>Tracking new openings across the companies you follow</p>
+  </div>
+
+  <!-- Banner with message -->
+  <div class="banner" id="banner">
+    <div class="d"></div>
+    <span class="txt" id="bannerTxt">Loading…</span>
+    <span class="ct" id="bannerCt"></span>
+  </div>
+
+  <!-- Stats cards -->
+  <div class="stats">
+    <div class="stat">
+      <div class="l">NEW TODAY</div>
+      <div class="n" id="stNew">—</div>
+    </div>
+    <div class="stat">
+      <div class="l">TOTAL ACTIVE</div>
+      <div class="n" id="stTotal">—</div>
+    </div>
+    <div class="stat">
+      <div class="l">COMPANIES</div>
+      <div class="n" id="stCos">—</div>
+    </div>
+    <div class="stat">
+      <div class="l">REMOTE ROLES</div>
+      <div class="n" id="stRemote">—</div>
+    </div>
+  </div>
+
+  <!-- Panel with filters and jobs -->
+  <div class="panel">
+    <!-- Filter bar -->
+    <div class="filterbar">
+      <div class="search">
+        <input type="text" id="search" placeholder="Search roles, companies, locations…">
+      </div>
+      <div class="selwrap">
+        <select id="company"></select>
+        <span class="caret">▼</span>
+      </div>
+      <div class="selwrap">
+        <select id="loc">
+          <option value="">All</option>
+          <option value="remote">Remote</option>
+          <option value="onsite">On-site</option>
+          <option value="hybrid">Hybrid</option>
+        </select>
+        <span class="caret">▼</span>
+      </div>
+      <button class="hideToggle" id="hideToggle" style="display:none;"></button>
+    </div>
+
+    <!-- System-level filters (from config.json) -->
+    <div id="systemFilters" style="padding:12px 20px;border-bottom:1px solid var(--line);background:var(--input);font-size:12px;color:var(--muted)"></div>
+
+    <!-- Tracked/Following section -->
+    <div id="tracked" style="display:none">
+      <div class="thead">
+        <span class="h">Following</span>
+        <span class="ct" id="trackedCt"></span>
+      </div>
+      <div class="rows" id="trackedRows"></div>
+    </div>
+
+    <!-- Jobs table header -->
+    <div class="thead">
+      <span class="h" style="flex:1">ROLE</span>
+      <span class="h" style="flex:0">STATUS</span>
+      <span class="h" style="flex:0">WORK TYPE</span>
+      <span class="h" style="flex:0">LOCATION</span>
+      <span class="h" style="flex:0">UPDATED</span>
+    </div>
+
+    <!-- Jobs list -->
+    <div id="rows"></div>
+    <div class="empty" id="empty" style="display:none;padding:40px;text-align:center;color:var(--muted)">No jobs match your filters.</div>
+  </div>
+</div>
+
+<script>/* data loaded from data.json */</script>
+<script src="/dashboard/app.js" defer></script>
+</body>
+</html>

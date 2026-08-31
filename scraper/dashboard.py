@@ -139,8 +139,9 @@ def _load_config(config_path: Path) -> dict:
 
 
 def build_dashboard(data_dir: Path, out_path: Path,
-                    config_path: Path | None = None) -> Path:
-  config = _load_config(config_path) if config_path else {}
+                    config_path: Path | None = None,
+                    config: dict | None = None) -> Path:
+  config = config if config is not None else (_load_config(config_path) if config_path else {})
   data = collect(data_dir, config)
   # Write only the machine-readable per-run payload. Static assets live in
   # the dashboard directory and are managed separately (not rewritten).
@@ -162,10 +163,6 @@ def build_dashboard(data_dir: Path, out_path: Path,
 # The large single-file HTML template and embedded JS/CSS have been removed.
 # Static files now live under the `dashboard/` directory and a per-run
 # `data.json` is written by `build_dashboard()`.
-    config = _load_config(config_path) if config_path else {}
-    data = collect(data_dir, config)
-    out_path.write_text(render(data), encoding="utf-8")
-    return out_path
 
 
 _TEMPLATE = r"""<!DOCTYPE html>
@@ -427,7 +424,7 @@ _TEMPLATE = r"""<!DOCTYPE html>
       </div>
       <div class="selwrap">
         <select id="loc">
-          <option value="all">All Locations</option>
+          <option value="all">All</option>
           <option value="remote">Remote</option>
           <option value="onsite">On-site</option>
         </select>

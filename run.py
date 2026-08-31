@@ -37,8 +37,11 @@ def load_config(path: Path) -> tuple[list[dict], dict]:
     return cfg["companies"], cfg.get("filters", {})
 
 
-def run(config_path: Path, data_dir: Path, seed: bool) -> int:
+def run(config_path: Path, data_dir: Path, seed: bool,
+        filter_override: dict | None = None) -> int:
     companies, filter_cfg = load_config(config_path)
+    if filter_override is not None:
+        filter_cfg = {**filter_cfg, **filter_override}
     keep = make_filter(filter_cfg)
     run_date = date.today().isoformat()
     results = []
@@ -82,7 +85,11 @@ def run(config_path: Path, data_dir: Path, seed: bool) -> int:
     errors = [f"{r['company']}: {r['error']}" for r in results if r["error"]]
     store.save_run_status(data_dir, ok=not errors, errors=errors)
 
-    out = build_dashboard(data_dir, ROOT / "dashboard" / "index.html", config_path)
+    out = build_dashboard(
+        data_dir,
+        ROOT / "dashboard" / "index.html",
+        config={"companies": companies, "filters": filter_cfg},
+    )
     print(f"[dashboard] {out}")
     return 1 if errors else 0
 
