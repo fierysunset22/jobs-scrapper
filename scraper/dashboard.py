@@ -24,6 +24,7 @@ from pathlib import Path
 
 from scraper import prefs as prefs_store
 from scraper import store
+from scraper.filters import work_arrangement
 
 
 def _slug(company: str) -> str:
@@ -72,7 +73,7 @@ def collect(data_dir: Path, config: dict) -> dict:
         meta[_slug(c["company"])] = {"name": c["company"],
                                      "domain": c.get("domain", "")}
 
-    # Jobs discovered on today's run → drives "New Today" + the NEW badge.
+    # Jobs first seen on today's run → drives "New Today" + the NEW badge.
     events_raw = store.load_events(data_dir)
     new_ids_today = {e["id"] for e in events_raw if e.get("date") == today_str}
 
@@ -80,6 +81,7 @@ def collect(data_dir: Path, config: dict) -> dict:
     companies = []
     jobs = []
     remote_count = 0
+    new_count = 0
     if state_dir.exists():
         for path in sorted(state_dir.glob("*.json")):
             info = meta.get(path.stem, {"name": path.stem.replace("-", " ").title(),
@@ -92,15 +94,21 @@ def collect(data_dir: Path, config: dict) -> dict:
                 loc = r.get("location", "")
                 if _is_remote(loc):
                     remote_count += 1
+
+                first_seen = r.get("first_seen") or ""
+                is_new = bool(first_seen == today_str or r.get("id", "") in new_ids_today)
+                if is_new:
+                    new_count += 1
                 jobs.append({
                     "id": r.get("id", ""),
                     "company": info["name"],
                     "domain": info["domain"],
                     "title": r.get("title", ""),
                     "location": loc,
+                    "work_type": work_arrangement(loc, r.get("description", "")),
                     "url": r.get("url", ""),
                     "remote": _is_remote(loc),
-                    "isNew": r.get("id", "") in new_ids_today,
+                    "isNew": is_new,
                     "updated": _relative(r.get("updated_at", ""), today),
                 })
 
@@ -121,7 +129,7 @@ def collect(data_dir: Path, config: dict) -> dict:
         "companies": sorted(companies, key=lambda c: c["company"]),
         "jobs": jobs,
         "total_jobs": len(jobs),
-        "new_count": len(new_ids_today),
+        "new_count": new_count,
         "remote_count": remote_count,
         # Active filters applied during fetch
         "filters": config.get("filters", {}),

@@ -35,7 +35,20 @@ def load_snapshot(data_dir: Path, company: str) -> dict | None:
 def save_snapshot(data_dir: Path, company: str, jobs: list[dict]) -> None:
     path = _state_path(data_dir, company)
     path.parent.mkdir(parents=True, exist_ok=True)
-    snapshot = {j["id"]: j for j in jobs}
+
+    previous = load_snapshot(data_dir, company) or {}
+    snapshot = {}
+    for j in jobs:
+        job_id = j["id"]
+        job = dict(j)
+        if job_id in previous:
+            prev_job = previous[job_id]
+            if "first_seen" in prev_job:
+                job.setdefault("first_seen", prev_job["first_seen"])
+        else:
+            job.setdefault("first_seen", datetime.now(timezone.utc).date().isoformat())
+        snapshot[job_id] = job
+
     tmp = path.with_suffix(".json.tmp")
     with tmp.open("w", encoding="utf-8") as f:
         json.dump(snapshot, f, indent=2, ensure_ascii=False)
@@ -63,13 +76,15 @@ def record_events(data_dir: Path, company: str, new_jobs: list[dict],
         return
     events = load_events(data_dir)
     for j in new_jobs:
+        job = dict(j)
+        job.setdefault("first_seen", run_date)
         events.append({
             "date": run_date,
             "company": company,
-            "id": j["id"],
-            "title": j["title"],
-            "location": j["location"],
-            "url": j["url"],
+            "id": job["id"],
+            "title": job["title"],
+            "location": job["location"],
+            "url": job["url"],
         })
     path = _events_path(data_dir)
     path.parent.mkdir(parents=True, exist_ok=True)

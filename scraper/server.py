@@ -143,31 +143,9 @@ class Handler(BaseHTTPRequestHandler):
                        "application/json")
             return
 
-        # Important: do not touch config.json here. The repo config is the
-        # default source for filters, while any edits from the browser stay in
-        # localStorage as a session-specific override.
-        # We still accept the request so the UI can reload, but we never mutate
-        # the on-disk config file.
-
-        # Re-run the pipeline with new filters. Don't block the HTTP response
-        # on the potentially long-running pipeline: schedule it in a
-        # background thread so the UI gets an immediate 200 and the refresh
-        # happens asynchronously. The refresh lock still serializes runs.
-        def _background_run():
-            if not _refresh_lock.acquire(blocking=False):
-                return
-            try:
-                try:
-                    _run_pipeline(body)
-                except Exception as exc:
-                    print(f"[server] background pipeline failed: {exc}")
-            finally:
-                _refresh_lock.release()
-
-        t = threading.Thread(target=_background_run, daemon=True)
-        t.start()
-        # Respond immediately — the client can still trigger an explicit
-        # Refresh which reports busy if a run is active.
+        # Filters are presentation-only. Applying them must not rerun the
+        # scraper, since that would replace the full saved snapshot with only
+        # the matching roles.
         self._send(200, b'{"ok":true,"background":true}', "application/json")
 
     def _run_and_respond(self):

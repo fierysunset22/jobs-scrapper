@@ -80,8 +80,8 @@
         <select id="loc">
           <option value="">All</option>
           <option value="remote">Remote</option>
-          <option value="onsite">On-site</option>
           <option value="hybrid">Hybrid</option>
+          <option value="other">Other</option>
         </select>
         <span class="caret">▼</span>
       </div>
@@ -101,12 +101,15 @@
     </div>
 
     <!-- Jobs table header -->
-    <div class="thead">
-      <span class="h" style="flex:1">ROLE</span>
-      <span class="h" style="flex:0">STATUS</span>
-      <span class="h" style="flex:0">WORK TYPE</span>
-      <span class="h" style="flex:0">LOCATION</span>
-      <span class="h" style="flex:0">UPDATED</span>
+    <div class="thead" aria-label="Jobs table header">
+      <span class="h c-logo" aria-hidden="true"></span>
+      <span class="h c-role">ROLE</span>
+      <span class="h c-status">STATUS</span>
+      <span class="h c-type">WORK TYPE</span>
+      <span class="h c-loc">LOCATION</span>
+      <span class="h c-upd">UPDATED</span>
+      <span class="h c-view" aria-hidden="true"></span>
+      <span class="h c-act" aria-hidden="true"></span>
     </div>
 
     <!-- Jobs list -->

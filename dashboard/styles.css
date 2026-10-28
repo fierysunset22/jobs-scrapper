@@ -94,21 +94,50 @@
     pointer-events: none; }
   .search input:focus, .selwrap select:focus { border-color: oklch(0.4 0.08 252); }
 
-  .thead { display: flex; align-items: center; gap: 14px; padding: 8px 20px 8px 17px;
-    background: oklch(0.165 0.018 260); border-bottom: 2px solid var(--line2); }
-  .thead .h { font-size: 10px; font-weight: 700; color: var(--muted);
-    text-transform: uppercase; letter-spacing: .1em; }
-  .c-logo { width: 36px; flex-shrink: 0; }
-  .c-role { flex: 1; min-width: 0; }
-  .c-status { width: 68px; flex-shrink: 0; }
-  .c-type { width: 90px; flex-shrink: 0; }
-  .c-loc { width: 150px; flex-shrink: 0; }
-  .c-upd { width: 64px; flex-shrink: 0; text-align: right; }
-  .c-view { width: 70px; flex-shrink: 0; }
+  .thead {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr) 68px 90px 150px 64px 70px 70px;
+    column-gap: 14px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 20px 8px 17px;
+    background: oklch(0.165 0.018 260);
+    border-bottom: 2px solid var(--line2);
+    align-items: center;
+  }
+  .thead .h {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .1em;
+  }
+  .c-logo { width: 36px; }
+  .c-role { min-width: 0; }
+  .c-status { width: 68px; }
+  .c-type { width: 90px; }
+  .c-loc { width: 150px; }
+  .c-upd { width: 64px; justify-content: flex-end; }
+  .c-view { width: 70px; }
+  .c-act { width: 70px; }
 
-  .row { display: flex; align-items: center; gap: 14px; padding: 13px 20px 13px 17px;
-    border-bottom: 1px solid oklch(0.215 0.015 260); border-left: 3px solid transparent;
-    background: oklch(0.185 0.015 260); transition: background .12s; }
+  .row {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr) 68px 90px 150px 64px 70px 70px;
+    column-gap: 14px;
+    width: 100%;
+    box-sizing: border-box;
+    align-items: center;
+    padding: 13px 20px 13px 17px;
+    border-bottom: 1px solid oklch(0.215 0.015 260);
+    border-left: 3px solid transparent;
+    background: oklch(0.185 0.015 260);
+    transition: background .12s;
+  }
+  .row > * { min-width: 0; }
   .row:hover { background: oklch(0.205 0.018 260); }
   .row.new { background: oklch(0.215 0.048 252); border-left-color: var(--blue2); }
   .row.new:hover { background: oklch(0.23 0.052 252); }

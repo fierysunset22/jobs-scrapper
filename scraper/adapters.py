@@ -37,13 +37,15 @@ def _get_json(url: str):
         raise FetchError(f"{url}: {exc}") from exc
 
 
-def _norm(job_id, title, location, url, updated_at, offices=None) -> dict:
+def _norm(job_id, title, location, url, updated_at, offices=None,
+          description="") -> dict:
     return {
         "id": str(job_id),
         "title": (title or "").strip(),
         "location": (location or "").strip(),
         "url": url or "",
         "updated_at": updated_at or "",
+        "description": description or "",
         # Provider-supplied office/region groupings (e.g. Greenhouse's "US",
         # "Ireland Locations"). More reliable than the free-text location for
         # country filtering. Empty for providers that don't expose it.
@@ -64,7 +66,8 @@ def greenhouse(cfg: dict) -> list[dict]:
         loc = (j.get("location") or {}).get("name", "")
         offices = [o.get("name", "") for o in j.get("offices", [])]
         out.append(_norm(j.get("id"), j.get("title"), loc,
-                         j.get("absolute_url"), j.get("updated_at"), offices))
+                 j.get("absolute_url"), j.get("updated_at"), offices,
+                 j.get("content", "")))
     return out
 
 
@@ -78,7 +81,8 @@ def lever(cfg: dict) -> list[dict]:
         cats = j.get("categories") or {}
         # Lever createdAt is epoch millis; keep as string for stable diffing.
         out.append(_norm(j.get("id"), j.get("text"), cats.get("location"),
-                         j.get("hostedUrl"), str(j.get("createdAt", ""))))
+                 j.get("hostedUrl"), str(j.get("createdAt", "")),
+                 description=j.get("descriptionPlain", "") or j.get("description", "")))
     return out
 
 
@@ -100,7 +104,8 @@ def eightfold(cfg: dict) -> list[dict]:
         for p in positions:
             url = p.get("canonicalPositionUrl") or p.get("positionUrl") or ""
             out.append(_norm(p.get("id"), p.get("name"), p.get("location"),
-                             url, str(p.get("t_create", ""))))
+                             url, str(p.get("t_create", "")),
+                             description=p.get("description", "")))
         start += len(positions)
         if start >= data.get("count", 0):
             break
@@ -119,7 +124,8 @@ def ashby(cfg: dict) -> list[dict]:
         # country filtering, same role Greenhouse's `offices` plays.
         offices = [v for v in (addr.get("addressCountry"), addr.get("addressRegion")) if v]
         out.append(_norm(j.get("id"), j.get("title"), j.get("location"),
-                         j.get("jobUrl"), j.get("publishedAt"), offices))
+                 j.get("jobUrl"), j.get("publishedAt"), offices,
+                 j.get("descriptionHtml", "") or j.get("description", "")))
     return out
 
 

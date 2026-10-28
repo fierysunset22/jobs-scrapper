@@ -50,7 +50,7 @@ function getEffectiveFilters() {
 
 function saveSessionFilters(filters) {
   const next = {
-    work_arrangement: ["any", "remote", "hybrid", "onsite"].includes(filters.work_arrangement)
+    work_arrangement: ["any", "remote", "hybrid", "other"].includes(filters.work_arrangement)
       ? filters.work_arrangement : "any",
   };
   try {
@@ -64,8 +64,8 @@ function saveSessionFilters(filters) {
 
 // Show system-level filters, including browser-local overrides.
 function renderSystemFilters() {
-  const cfg_filters = getEffectiveFilters();
-  $("loc").value = cfg_filters.work_arrangement === "any" ? "" : (cfg_filters.work_arrangement || "");
+  const saved = readSessionFilters().work_arrangement;
+  $("loc").value = ["remote", "hybrid", "other"].includes(saved) ? saved : "";
 }
 renderSystemFilters();
 
@@ -95,21 +95,7 @@ async function saveKeywords() {
   const nextKeywords = saveSessionKeywords(getCurrentKeywordTags());
   DATA.filters = DATA.filters || {};
   DATA.filters.keywords = nextKeywords;
-
-  if (location.protocol.startsWith("http")) {
-    try {
-      await fetch("/api/update-filters", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(currentFilterPayload())
-      });
-      render();
-    } catch (e) {
-      console.error("Failed to update keyword filters:", e);
-    }
-  } else {
-    render();
-  }
+  render();
 }
 
 function renderKeywordTags(list) {
@@ -195,25 +181,11 @@ keywordInputEl.addEventListener("blur", () => {
 });
 
 // Handle filter changes
-async function updateFilters() {
-  if (location.protocol.startsWith("http")) {
-    saveSessionFilters({
-      work_arrangement: $("loc").value || "any",
-    });
-    try {
-      const r = await fetch("/api/update-filters", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(currentFilterPayload())
-      });
-      if (r.ok) {
-        // Reload to show updated results
-        location.reload();
-      }
-    } catch (e) {
-      console.error("Failed to update filters:", e);
-    }
-  }
+function updateFilters() {
+  saveSessionFilters({
+    work_arrangement: $("loc").value || "any",
+  });
+  render();
 }
 
 $("loc").addEventListener("change", updateFilters);
@@ -392,7 +364,7 @@ function rowHtml(j, ctx) {
   const gone = ctx === "tracked" && !byId.has(j.id);
   const badge = gone ? `<div class="badge gone">GONE</div>`
     : (j.isNew ? `<div class="badge">NEW</div>` : "");
-  const type = workLocationType(j.location);
+  const type = j.work_type || workLocationType(j.location);
   const typeLabel = { remote: "Remote", hybrid: "Hybrid", onsite: "On-site", unknown: "Unknown" }[type];
   const typeChip = `<div class="chip ${type}">${typeLabel}</div>`;
   const displayLocation = locationForDisplay(j.location);
@@ -438,8 +410,9 @@ function render() {
     if (!showHidden && hidden.has(j.id)) return false;
     if (showHidden && !hidden.has(j.id)) return false;
     if (co && j.company !== co) return false;
-    const type = workLocationType(j.location);
-    if (lf && type !== lf) return false;
+    const type = j.work_type || workLocationType(j.location);
+    if (lf === "other" && (type === "remote" || type === "hybrid")) return false;
+    if (lf && lf !== "other" && type !== lf) return false;
     if (q && !(j.title + " " + j.company + " " + j.location).toLowerCase().includes(q)) return false;
     return true;
   });

@@ -98,9 +98,16 @@ def _compile_keywords(keywords: list[str]) -> re.Pattern | None:
     return re.compile(r"\b(?:" + alts + r")\b", re.I)
 
 
-def work_arrangement(location: str) -> str:
-    """Classify an ATS location string by its stated work arrangement."""
-    value = (location or "").lower()
+def work_arrangement(location: str, description: str = "") -> str:
+    """Classify from keywords anywhere in the location or description."""
+    value = f"{location or ''} {description or ''}".lower()
+    # A specific recurring office schedule means the role is hybrid, even if
+    # the description does not include Ashby's separate "Location Type" field.
+    days_per_week = r"(?:[1-5]|one|two|three|four|five)\s+days?\s+(?:(?:a|per)\s+week|/week)"
+    office = r"(?:in[- ]office|on[- ]?site|at (?:the )?office)"
+    if (re.search(rf"\b{office}\b.{{0,40}}\b{days_per_week}\b", value)
+            or re.search(rf"\b{days_per_week}\b.{{0,40}}\b{office}\b", value)):
+        return "hybrid"
     if re.search(r"\bremote\b", value):
         return "remote"
     if re.search(r"\bhybrid\b", value):
@@ -126,7 +133,7 @@ def make_filter(filters: dict | None):
         if kw is not None and not kw.search(job.get("title", "")):
             return False
         loc = job.get("location", "")
-        if arrangement != "any" and work_arrangement(loc) != arrangement:
+        if arrangement != "any" and work_arrangement(loc, job.get("description", "")) != arrangement:
             return False
         if us_only:
             # Office/region tags (Greenhouse) are the most reliable US signal and
